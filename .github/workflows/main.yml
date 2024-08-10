@@ -45,3 +45,9 @@ jobs:
         run: |
           $ErrorActionPreference = "Stop"
           ./aws-cleanup-SFNstatemachines.ps1
+
+      - name: Remove EC2 Instances
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          ./aws-cleanup-EC2instances.ps1
