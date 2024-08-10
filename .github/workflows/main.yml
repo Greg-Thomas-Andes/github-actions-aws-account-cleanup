@@ -12,26 +12,6 @@ permissions:
   contents: read
 
 jobs:
-  # Setup:
-    # runs-on: ubuntu-latest
-    # steps:
-    #   - name: Checkout repository
-    #     uses: actions/checkout@v4
-
-    #   - name: Configure AWS credentials
-    #     uses: aws-actions/configure-aws-credentials@v3
-    #     with:
-    #       role-to-assume: arn:aws:iam::410793108087:role/github-actions-aws-account-cleanup
-    #       role-session-name: cleanup-session
-    #       aws-region: ${{ env.AWS_REGION }}
-
-    #   - name: Install AWS.Tools modules
-    #     shell: pwsh
-    #     run: |
-    #       Set-PSRepository PSGallery -InstallationPolicy Trusted
-    #       Install-Module -Name AWS.Tools.Common, AWS.Tools.EC2, AWS.Tools.StepFunctions -Force -Scope CurrentUser
-    #       $env:AWS_POWERSHELL_PREFER_MODULE = "AWS.Tools"
-
   EC2-Cleanup:
     runs-on: ubuntu-latest
     steps:
@@ -45,10 +25,16 @@ jobs:
           role-session-name: cleanup-session
           aws-region: ${{ env.AWS_REGION }}
 
+      - name: Install and Import AWS.Tools.EC2 module
+        shell: pwsh
+        run: |
+          Set-PSRepository PSGallery -InstallationPolicy Trusted
+          Install-Module -Name AWS.Tools.EC2 -Force -Scope CurrentUser
+          Import-Module AWS.Tools.EC2
+
       - name: Run EC2 cleanup script
         shell: pwsh
         run: |
-          Import-Module AWS.Tools.EC2
           $ErrorActionPreference = "Stop"
           $VerbosePreference = "Continue"
           ./aws-cleanup-EC2instances.ps1
@@ -66,10 +52,16 @@ jobs:
           role-session-name: cleanup-session
           aws-region: ${{ env.AWS_REGION }}
 
+      - name: Install and Import AWS.Tools.StepFunctions module
+        shell: pwsh
+        run: |
+          Set-PSRepository PSGallery -InstallationPolicy Trusted
+          Install-Module -Name AWS.Tools.StepFunctions -Force -Scope CurrentUser
+          Import-Module AWS.Tools.StepFunctions
+
       - name: Run Step Functions cleanup scripts
         shell: pwsh
         run: |
-          Import-Module AWS.Tools.StepFunctions
           $ErrorActionPreference = "Stop"
           ./aws-cleanup-SFNactivities.ps1
           ./aws-cleanup-SFNstatemachines.ps1
