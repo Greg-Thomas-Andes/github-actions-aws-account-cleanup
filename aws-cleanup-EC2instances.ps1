@@ -1,13 +1,16 @@
-# Import the AWS PowerShell module
-Import-Module AWS.Tools.EC2
-
 # Get all EC2 instances
-$instances = Get-EC2Instance
+try {
+    $instances = Get-EC2Instance
+}
+catch {
+    Write-Host "Error listing EC2 instances: $($_.Exception.Message)"
+    exit 1
+}
 
 # Check if any instances were found
 if ($instances.Instances.Count -eq 0) {
     Write-Host "No EC2 instances found."
-    exit
+    exit 0
 }
 
 # Iterate through each instance and terminate it
