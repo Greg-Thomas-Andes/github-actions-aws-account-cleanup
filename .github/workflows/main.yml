@@ -1,15 +1,14 @@
 # Sample workflow to access AWS resources when workflow is tied to branch
-# The workflow Creates static website using aws s3
-name: AWS example workflow
+# The workflow cleans up AWS Step Functions resources
+name: AWS Step Functions Cleanup
+
 on:
   push:
   workflow_dispatch:
 
 env:
-#   BUCKET_NAME : "<example-bucket-name>"
-  AWS_REGION : ap-southeast-1
+  AWS_REGION: ap-southeast-1
 
-# permission can be added at job level or workflow level
 permissions:
   id-token: write   # This is required for requesting the JWT
   contents: read    # This is required for actions/checkout
@@ -20,9 +19,28 @@ jobs:
     steps:
       - name: Git clone the repository
         uses: actions/checkout@v4
-      - name: configure aws OIDC credentials
+
+      - name: Configure AWS OIDC credentials
         uses: aws-actions/configure-aws-credentials@v3
         with:
           role-to-assume: arn:aws:iam::410793108087:role/github-actions-aws-account-cleanup
           role-session-name: cleanup-session
           aws-region: ${{ env.AWS_REGION }}
+
+      - name: Install AWS.Tools modules
+        shell: pwsh
+        run: |
+          Install-Module -Name AWS.Tools.Common -Force -Scope CurrentUser
+          Install-Module -Name AWS.Tools.StepFunctions -Force -Scope CurrentUser
+
+      - name: Remove Step Function Activities
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          ./aws-cleanup-SFNactivities.ps1
+
+      - name: Remove Step Function State Machines
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          ./aws-cleanup-SFNstatemachines.ps1
