@@ -13,7 +13,7 @@ Import-Module AWS.Tools.Common
 Import-Module AWS.Tools.StepFunctions
 
 # Get all AWS regions
-$regions = Get-AWSRegion
+$regions = Get-AWSRegion | Where-Object Region -match '^ap-(south|southeast|northeast)'
 
 foreach ($region in $regions) {
     $regionName = $region.Region
