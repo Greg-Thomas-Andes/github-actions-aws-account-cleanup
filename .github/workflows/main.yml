@@ -1,6 +1,4 @@
-# Sample workflow to access AWS resources when workflow is tied to branch
-# The workflow cleans up AWS Step Functions resources
-name: AWS Step Functions Cleanup
+name: AWS Resource Cleanup
 
 on:
   push:
@@ -10,17 +8,17 @@ env:
   AWS_REGION: ap-southeast-1
 
 permissions:
-  id-token: write   # This is required for requesting the JWT
-  contents: read    # This is required for actions/checkout
+  id-token: write
+  contents: read
 
 jobs:
-  AWS-Cleanup:
+  Setup:
     runs-on: ubuntu-latest
     steps:
-      - name: Git clone the repository
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Configure AWS OIDC credentials
+      - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v3
         with:
           role-to-assume: arn:aws:iam::410793108087:role/github-actions-aws-account-cleanup
@@ -30,24 +28,65 @@ jobs:
       - name: Install AWS.Tools modules
         shell: pwsh
         run: |
-          Install-Module -Name AWS.Tools.Common -Force -Scope CurrentUser
-          Install-Module -Name AWS.Tools.StepFunctions -Force -Scope CurrentUser
+          Install-Module -Name AWS.Tools.Common, AWS.Tools.EC2, AWS.Tools.StepFunctions -Force -Scope CurrentUser
           $env:AWS_POWERSHELL_PREFER_MODULE = "AWS.Tools"
 
-      - name: Remove Step Function Activities
+  EC2-Cleanup:
+    needs: Setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          role-to-assume: arn:aws:iam::410793108087:role/github-actions-aws-account-cleanup
+          role-session-name: cleanup-session
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Run EC2 cleanup script
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          ./aws-cleanup-EC2instances.ps1
+
+  StepFunctions-Activities-Cleanup:
+    needs: Setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          role-to-assume: arn:aws:iam::410793108087:role/github-actions-aws-account-cleanup
+          role-session-name: cleanup-session
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Run Step Functions Activities cleanup script
         shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
           ./aws-cleanup-SFNactivities.ps1
 
-      - name: Remove Step Function State Machines
+  StepFunctions-StateMachines-Cleanup:
+    needs: Setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          role-to-assume: arn:aws:iam::410793108087:role/github-actions-aws-account-cleanup
+          role-session-name: cleanup-session
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Run Step Functions State Machines cleanup script
         shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
           ./aws-cleanup-SFNstatemachines.ps1
-
-      - name: Remove EC2 Instances
-        shell: pwsh
-        run: |
-          $ErrorActionPreference = "Stop"
-          ./aws-cleanup-EC2instances.ps1
