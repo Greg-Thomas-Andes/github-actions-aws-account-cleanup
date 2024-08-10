@@ -3,7 +3,7 @@
 name: AWS Step Functions Cleanup
 
 on:
-  # push:
+  push:
   workflow_dispatch:
 
 env:
