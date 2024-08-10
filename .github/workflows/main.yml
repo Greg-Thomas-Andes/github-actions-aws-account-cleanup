@@ -12,28 +12,27 @@ permissions:
   contents: read
 
 jobs:
-  Setup:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+  # Setup:
+    # runs-on: ubuntu-latest
+    # steps:
+    #   - name: Checkout repository
+    #     uses: actions/checkout@v4
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v3
-        with:
-          role-to-assume: arn:aws:iam::410793108087:role/github-actions-aws-account-cleanup
-          role-session-name: cleanup-session
-          aws-region: ${{ env.AWS_REGION }}
+    #   - name: Configure AWS credentials
+    #     uses: aws-actions/configure-aws-credentials@v3
+    #     with:
+    #       role-to-assume: arn:aws:iam::410793108087:role/github-actions-aws-account-cleanup
+    #       role-session-name: cleanup-session
+    #       aws-region: ${{ env.AWS_REGION }}
 
-      - name: Install AWS.Tools modules
-        shell: pwsh
-        run: |
-          Set-PSRepository PSGallery -InstallationPolicy Trusted
-          Install-Module -Name AWS.Tools.Common, AWS.Tools.EC2, AWS.Tools.StepFunctions -Force -Scope CurrentUser
-          $env:AWS_POWERSHELL_PREFER_MODULE = "AWS.Tools"
+    #   - name: Install AWS.Tools modules
+    #     shell: pwsh
+    #     run: |
+    #       Set-PSRepository PSGallery -InstallationPolicy Trusted
+    #       Install-Module -Name AWS.Tools.Common, AWS.Tools.EC2, AWS.Tools.StepFunctions -Force -Scope CurrentUser
+    #       $env:AWS_POWERSHELL_PREFER_MODULE = "AWS.Tools"
 
   EC2-Cleanup:
-    needs: Setup
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -55,7 +54,6 @@ jobs:
           ./aws-cleanup-EC2instances.ps1
 
   StepFunctions-Cleanup:
-    needs: Setup
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
