@@ -3,7 +3,7 @@
 name: AWS Step Functions Cleanup
 
 on:
-  push:
+  # push:
   workflow_dispatch:
 
 env:
@@ -32,6 +32,7 @@ jobs:
         run: |
           Install-Module -Name AWS.Tools.Common -Force -Scope CurrentUser
           Install-Module -Name AWS.Tools.StepFunctions -Force -Scope CurrentUser
+          $env:AWS_POWERSHELL_PREFER_MODULE = "AWS.Tools"
 
       - name: Remove Step Function Activities
         shell: pwsh

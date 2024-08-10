@@ -11,7 +11,13 @@ Import-Module AWSPowerShell
 # Set-DefaultAWSRegion -Region YOUR_REGION
 
 # Get all Step Function state machines
-$stateMachines = Get-SFNStateMachineList
+try {
+  $stateMachines = Get-SFNStateMachineList
+}
+catch {
+  Write-Host "Error listing state machines: $_"
+  exit 1
+}
 
 # Iterate through each state machine
 foreach ($stateMachine in $stateMachines) {
@@ -21,7 +27,13 @@ foreach ($stateMachine in $stateMachines) {
   Write-Host "Processing state machine: $stateMachineName"
 
   # Get the current state machine definition
-  $currentDefinition = Get-SFNStateMachine -StateMachineArn $stateMachineArn
+  try {
+      $currentDefinition = Get-SFNStateMachine -StateMachineArn $stateMachineArn
+  }
+  catch {
+      Write-Host "Error getting state machine definition for $stateMachineName: $_"
+      continue
+  }
 
   # Parse the current definition (assuming it's in JSON format)
   $definitionObject = $currentDefinition.Definition | ConvertFrom-Json
