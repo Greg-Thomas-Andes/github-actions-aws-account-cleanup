@@ -37,12 +37,15 @@ foreach ($region in $regions) {
 
         # Attempt to delete the activity
         try {
-            Remove-SFNActivity -ActivityArn $activityArn -Region $regionName
+            Remove-SFNActivity -ActivityArn $activityArn -Region $regionName -Force
             Write-Host "Successfully removed activity: $activityName"
         }
         catch {
             Write-Host "Failed to remove activity: $activityName"
-            Write-Host "Error: $_"
+            Write-Host "Error: $($_.Exception.Message)"
+            if ($_.Exception.InnerException) {
+                Write-Host "Inner Exception: $($_.Exception.InnerException.Message)"
+            }
         }
     }
 
