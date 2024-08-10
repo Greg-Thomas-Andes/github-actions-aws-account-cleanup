@@ -3,6 +3,9 @@
 # Ensure the AWS PowerShell module is imported
 Import-Module AWS.Tools.StepFunctions
 
+# Set error action preference to continue
+$ErrorActionPreference = "Continue"
+
 # Get all Step Function state machines
 try {
     $stateMachines = Get-SFNStateMachineList
@@ -19,9 +22,9 @@ foreach ($stateMachine in $stateMachines) {
 
     Write-Host "Processing state machine: $stateMachineName"
 
-    # Delete the state machine
+    # Delete the state machine without confirmation
     try {
-        Remove-SFNStateMachine -StateMachineArn $stateMachineArn
+        Remove-SFNStateMachine -StateMachineArn $stateMachineArn -Force
         Write-Host "Successfully deleted state machine: $stateMachineName"
     }
     catch {
@@ -29,5 +32,8 @@ foreach ($stateMachine in $stateMachines) {
         Write-Host "Error: $($_.Exception.Message)"
     }
 }
+
+# Reset error action preference
+$ErrorActionPreference = "Stop"
 
 Write-Host "Script execution completed."
